@@ -1,0 +1,10 @@
+{
+  "name": "weekly-budget",
+  "private": true,
+  "type": "module",
+  "scripts": { "dev": "netlify dev" },
+  "dependencies": {
+    "@netlify/blobs": "^11.1.1",
+    "plaid": "^47.0.0"
+  }
+}
