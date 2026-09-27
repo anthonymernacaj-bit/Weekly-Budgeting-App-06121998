@@ -99,6 +99,9 @@ button{cursor:pointer}
 .ph .pt span{font-size:.85rem;color:var(--muted)}
 .ph .pr{display:flex;align-items:center;gap:10px;white-space:nowrap}
 .ph .pr b{font-size:1.1rem}
+.ph .pr .of{font-size:.85rem;font-weight:500;color:var(--muted)}
+.pbox .pin>.grp{margin:12px 0 0}
+.pbox .pin>.tx:last-child{border-bottom:0}
 .ph:hover .pt b{text-decoration:underline;text-underline-offset:3px}
 .pbox.open{border-color:var(--ink)}
 .stack{display:flex;flex-direction:column;gap:12px}
@@ -136,6 +139,7 @@ section{margin-bottom:30px}
 .gh .n{font-weight:700;display:flex;align-items:center;gap:8px}
 .sw{width:10px;height:10px;border-radius:3px;display:inline-block;flex:none}
 .gh .t{font-size:.9rem;color:var(--muted)}
+.gh .gwk{font-size:.78rem;font-weight:500;color:var(--muted);margin-left:2px}
 .gh .t b{color:var(--ink)}
 .brow{padding:10px 0;border-bottom:1px solid var(--line)}
 .brow .l{display:flex;justify-content:space-between;gap:10px;font-size:.95rem}
@@ -173,6 +177,14 @@ section{margin-bottom:30px}
 
 .ychart{width:100%;height:auto;display:block}
 .legend{display:flex;gap:16px;font-size:.85rem;color:var(--muted);margin-top:8px}
+.yfw{position:relative}
+.yfb{width:36px;height:36px;margin:-6px 0;color:var(--muted)}
+.yfb.on{color:var(--ink);background:var(--track)}
+.yfm{position:absolute;right:0;top:calc(100% + 6px);z-index:8;width:max-content;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px;box-shadow:0 12px 30px rgba(0,0,0,.28);animation:dayOpen .18s ease-out}
+.yfm button{display:flex;align-items:center;gap:10px;width:100%;white-space:nowrap;border:0;background:transparent;text-align:left;padding:10px 12px;border-radius:9px;font-size:.92rem;color:var(--ink)}
+.yfm button:hover{background:var(--track)}
+.yfm button[aria-checked="true"]{background:var(--track);font-weight:700}
+.yfm .sws{display:inline-flex;gap:2px}
 .legend span{display:flex;align-items:center;gap:6px}
 .mtable{width:100%;border-collapse:collapse;font-size:.92rem}
 .mtable th{text-align:right;font-weight:500;color:var(--muted);font-size:.82rem;padding:6px 0 6px 8px;border-bottom:2px solid var(--ink)}
@@ -360,6 +372,7 @@ const monthDoc = k => S.months[k] || {kind:"month", month:k, tx:[]};
 const monthTx = k => (S.months[k]?.tx) || [];
 const budgetFor = k => cfgFor(k).categories;
 const sum = arr => round2(arr.reduce((a,t)=>a+(t.ignored?0:t.amount),0));
+const spendSum = (arr, k) => round2(arr.reduce((a,t)=>a+(t.ignored || catGroup(k,t.cat)==="bill" ? 0 : t.amount),0));
 const catGroup = (k, name) => { const c = budgetFor(k).find(c=>c.name===name); if (c) return c.group; for (const v of S.settings.versions.slice().reverse()){ const x=v.categories.find(c=>c.name===name); if (x) return x.group; } };
 const catColor = g => g==="want" ? "var(--want)" : g==="need" ? "var(--need)" : g==="bill" ? "var(--bill)" : "var(--muted)";
 function monthStats(k){
@@ -371,17 +384,18 @@ function monthStats(k){
 function weekTx(w){ const a=iso(w), b=iso(addDays(w,6)); return monthTx(mkeyOf(w)).filter(t=>t.date>=a && t.date<=b); }
 
 /* ---------- components ---------- */
-function budgetBlock(k, wk, expand){
+function budgetBlock(k, wk, expand, only, bare){
   const cats = budgetFor(k); const upto = wk ? iso(addDays(wk,6)) : null, from = wk ? iso(wk) : null;
   const tx = upto ? monthTx(k).filter(t=>t.date<=upto) : monthTx(k);
   const spent = {}, wsp = {}; for (const t of tx){ if (t.ignored) continue; spent[t.cat]=(spent[t.cat]||0)+t.amount; if (from && t.date>=from) wsp[t.cat]=(wsp[t.cat]||0)+t.amount; }
   if (!cats.length) return `<p class="empty">No budget was set for this month.</p>`;
-  const groups = [["need","Needs"],["want","Wants"],["bill","Bills"]];
+  const groups = [["need","Needs"],["want","Wants"],["bill","Bills"]].filter(([g])=>!only || only.includes(g));
   let html = "";
   for (const [g,label] of groups){
     const cs = cats.filter(c=>c.group===g); if (!cs.length) continue;
     const lim = cs.reduce((a,c)=>a+(+c.limit||0),0), sp = cs.reduce((a,c)=>a+(spent[c.name]||0),0);
-    html += `<div class="grp"><div class="gh"><span class="n"><i class="sw" style="background:${catColor(g)}"></i>${label}</span><span class="t"><b>${money(sp)}</b> of ${money(lim)}</span></div>`;
+    const gw = wk ? round2(cs.reduce((a,c)=>a+(wsp[c.name]||0),0)) : 0;
+    html += `<div class="grp"><div class="gh"><span class="n"><i class="sw" style="background:${catColor(g)}"></i>${label}${wk&&g==="bill"?`<span class="gwk">${money(gw)} this week</span>`:""}</span><span class="t"><b>${money(sp)}</b> of ${money(lim)}</span></div>`;
     for (const c of cs){
       const s = round2(spent[c.name]||0), l = +c.limit||0, over = s>l, pct = l ? Math.max(0,Math.min(100,s/l*100)) : 0;
       const w = round2(wsp[c.name]||0), wpct = (wk && l && w>0) ? Math.min(pct, w/l*100) : 0;
@@ -390,13 +404,13 @@ function budgetBlock(k, wk, expand){
     }
     html += `</div>`;
   }
-  const extra = Object.keys(spent).filter(n=>!cats.some(c=>c.name===n) && Math.abs(spent[n])>0.004);
+  const extra = only && !only.includes("need") ? [] : Object.keys(spent).filter(n=>!cats.some(c=>c.name===n) && Math.abs(spent[n])>0.004);
   if (extra.length){
     html += `<div class="grp"><div class="gh"><span class="n"><i class="sw" style="background:var(--muted)"></i>Not budgeted</span><span class="t"><b>${money(extra.reduce((a,n)=>a+spent[n],0))}</b></span></div>`;
     for (const n of extra){ const inner = `<div class="l"><span>${esc(n)}</span><span><b>${money(spent[n])}</b></span></div>`; html += expand ? catRow(k, n, inner, "brow") : `<div class="brow">${inner}</div>`; }
     html += `</div>`;
   }
-  return html;
+  return bare ? html.replace(/<div class="gh">[\s\S]*?<\/div>/g, "") : html;
 }
 function catRow(k, name, inner, cls){
   const key = "cat|"+name, o = isOpen(key);
@@ -426,25 +440,33 @@ const banner = () => S.mode==="local" ? `<div class="banner">Saving in this brow
 /* ---------- views ---------- */
 function viewWeek(){
   const w = V.week, k = mkeyOf(w), tx = weekTx(w), isCur = iso(w)===iso(sow(today()));
-  const days = [...Array(7)].map((_,i)=>{ const d=addDays(w,i), ds=iso(d); const items=tx.filter(t=>t.date===ds); return {d, ds, items, total: sum(items)}; });
+  const days = [...Array(7)].map((_,i)=>{ const d=addDays(w,i), ds=iso(d); const items=tx.filter(t=>t.date===ds); return {d, ds, items, total: spendSum(items,k)}; });
   const max = Math.max(1, ...days.map(d=>d.total));
   const tIso = iso(today());
   const strip = days.map((d,i)=>`<button class="day ${d.ds===tIso?"today":""} ${V.day===d.ds?"sel":""} ${V.day&&V.day!==d.ds?"dim":""}" data-day="${d.ds}" aria-label="${DOWL[i]} ${d.d.getDate()}, ${money(d.total)}" aria-pressed="${V.day===d.ds}"><span class="col"><span class="bar" style="height:${Math.max(0,d.total)/max*100}%"></span></span><span class="amt">${d.total?moneyShort(d.total):"–"}</span><span class="dn">${DOW[i]}</span></button>`).join("");
   const st = monthStats(k); const {m} = mkeyParts(k);
-  const shown = days.filter(d=>d.items.length).reverse().map(d=>({...d, items: d.items.slice().reverse()}));
+  const isBill = t => catGroup(k,t.cat)==="bill";
+  const shown = days.map(d=>({...d, items: d.items.filter(t=>!isBill(t)).reverse()})).filter(d=>d.items.length).reverse();
   const sd = V.day ? days.find(d=>d.ds===V.day) : null; const grow = V.day && V.day!==lastDay; lastDay = V.day; 
   const expand = sd ? `<div class="dayx ${grow?"grow":""}" id="dayx"><div class="in"><div class="dxh"><b>${DOWL[sd.d.getDay()]}, ${MONTHS[sd.d.getMonth()].slice(0,3)} ${sd.d.getDate()}</b><span class="r">${money(sd.total)}</span></div>${sd.items.length?sd.items.map(t=>txRow(t,k)).join(""):`<p class="empty">Nothing logged this day.</p>`}<button class="addday" data-addday="${sd.ds}">Add a purchase to this day</button></div></div>` : "";
   const list = shown.length ? shown.map(d=>`<div class="daygrp"><div class="dh"><span>${DOWL[d.d.getDay()]}, ${MONTHS[d.d.getMonth()].slice(0,3)} ${d.d.getDate()}</span><span>${money(d.total)}</span></div>${d.items.length?d.items.map(t=>txRow(t,k)).join(""):`<p class="empty">Nothing logged. Tap Add to log a purchase for this day.</p>`}</div>`).join("") : `<p class="empty">Nothing logged this week yet. Tap Add after your next purchase.</p>`;
-  const cats = budgetFor(k), lim = cats.reduce((a,c)=>a+(+c.limit||0),0);
+  const allCats = budgetFor(k), cats = allCats.filter(c=>c.group!=="bill"), lim = cats.reduce((a,c)=>a+(+c.limit||0),0);
+  const billCats = allCats.filter(c=>c.group==="bill"), billLim = billCats.reduce((a,c)=>a+(+c.limit||0),0);
+  const billTx = newestFirst(tx.filter(isBill)), billsWeek = round2(billTx.reduce((a,t)=>a+(t.ignored?0:t.amount),0));
+  const billsToDate = round2(monthTx(k).filter(t=>t.date<=iso(addDays(w,6)) && !t.ignored && isBill(t)).reduce((a,t)=>a+t.amount,0));
+  const billsBody = (billCats.length ? budgetBlock(k, w, false, ["bill"], true) : `<p class="empty">No bills in this month's budget. Add them in settings.</p>`)
+    + `<div class="dh" style="padding-top:14px"><span>Paid this week</span><span>${money(billsWeek)}</span></div>`
+    + (billTx.length ? billTx.map(t=>txRow(t,k,true)).join("") : `<p class="empty" style="padding-top:4px">No bill payments this week.</p>`);
   const uptoW = iso(addDays(w,6)); const spentIn = monthTx(k).filter(t=>t.date<=uptoW && cats.some(c=>c.name===t.cat)).reduce((a,t)=>a+t.amount,0);
   const lastWeek = iso(addDays(weeksOfMonth(k).slice(-1)[0],0))===iso(w);
   return `${nav(isCur?"This week":rangeLabel(w), "w-1", "w+1", isCur?"":`<button class="jump" data-go="w0">Today</button>`)}
   ${banner()}
   <div class="hero"><div class="lbl">${isCur?"Spent this week":"Spent the week of "+rangeLabel(w)}${isCur?`, ${rangeLabel(w)}`:""}</div>
-    <div class="big">${money(sum(tx))}</div><div class="strip">${strip}</div>${expand}</div>
+    <div class="big">${money(spendSum(tx,k))}</div><div class="strip">${strip}</div>${expand}</div>
   <section><div class="sh"><h2>${MONTHS[m-1]}${k===mkeyOf(today())?" so far":""}</h2><span class="aside">${weeksOfMonth(k).length} weeks</span></div>${figs(st)}</section>
-  <section><div class="sh"><h2>${isCur||lastWeek?"Budget":"Budget through "+MONTHS[addDays(w,6).getMonth()].slice(0,3)+" "+addDays(w,6).getDate()}</h2><span class="aside">${lim?(lim-spentIn>=0?`${money(lim-spentIn)} left of ${money(lim)}`:`${money(spentIn-lim)} over ${money(lim)}`):""}</span></div>${budgetBlock(k, w)}</section>
-  <section>${box("wk", "Purchases this week", `${tx.length} logged`, money(sum(tx)), list)}</section>`;
+  <section><div class="sh"><h2>${isCur||lastWeek?"Budget":"Budget through "+MONTHS[addDays(w,6).getMonth()].slice(0,3)+" "+addDays(w,6).getDate()}</h2><span class="aside">${lim?(lim-spentIn>=0?`${money(lim-spentIn)} left of ${money(lim)}`:`${money(spentIn-lim)} over ${money(lim)}`):""}</span></div>${budgetBlock(k, w, false, ["need","want"])}</section>
+  <section class="stack">${box("wk", "Purchases this week", `${tx.length-billTx.length} logged`, money(spendSum(tx,k)), list)}
+  ${box("wkb", "Bills", `${money(billsWeek)} this week`, billLim?`${money(billsToDate)} <span class="of">of ${money(billLim)}</span>`:money(billsToDate), billsBody)}</section>`;
 }
 function viewMonth(){
   const k = V.month, st = monthStats(k), weeks = weeksOfMonth(k);
@@ -476,12 +498,14 @@ function viewYear(){
   const max = Math.max(1,...rows.map(r=>r.total));
   const W=480,H=230,pb=26,pt=20, bw=(W)/12;
   for (const r of rows){ let n=0, wv=0; for (const t of r.tx){ if (t.ignored) continue; const g=catGroup(r.k,t.cat); if (g==="bill") continue; if (g==="want") wv+=t.amount; else n+=t.amount; } r.needs=round2(n); r.wants=round2(wv); }
-  const smax = Math.max(1, ...rows.map(r=>r.has ? Math.max(0,r.bills)+Math.max(0,r.needs)+Math.max(0,r.wants) : 0));
+  const yf = V.yf || "all", show = g => yf==="all" || yf===g;
+  const shownTot = r => (show("bill")?Math.max(0,r.bills):0)+(show("need")?Math.max(0,r.needs):0)+(show("want")?Math.max(0,r.wants):0);
+  const smax = Math.max(1, ...rows.map(r=>r.has ? shownTot(r) : 0));
   const bars = rows.map((r,i)=>{ const x=i*bw+bw*0.18, w=bw*0.64, sc=(H-pb-pt)/smax;
-    const hb=(r.has?Math.max(0,r.bills):0)*sc, hn=(r.has?Math.max(0,r.needs):0)*sc, hw=(r.has?Math.max(0,r.wants):0)*sc;
+    const hb=(r.has&&show("bill")?Math.max(0,r.bills):0)*sc, hn=(r.has&&show("need")?Math.max(0,r.needs):0)*sc, hw=(r.has&&show("want")?Math.max(0,r.wants):0)*sc;
     const yb=H-pb-hb, yn=yb-hn, yw=yn-hw, cur=r.k===curK;
     const seg=(y,h,c)=> h>0.5 ? `<rect x="${x}" y="${y}" width="${w}" height="${Math.max(0,h-1)}" fill="${c}" rx="3"/>` : "";
-    return `<g class="ybar" data-openmonth="${r.k}" style="cursor:${r.has?"pointer":"default"}"><title>${MONTHS[i]}: ${money(r.total)} (${money(r.needs)} needs, ${money(r.wants)} wants, ${money(r.bills)} bills)</title><rect x="${i*bw}" y="0" width="${bw}" height="${H}" fill="transparent"/>${r.has?`${seg(yb,hb+1,"var(--bill)")}${seg(yn,hn,"var(--need)")}${seg(yw,hw,"var(--want)")}<text x="${x+w/2}" y="${yw-5}" text-anchor="middle" font-size="11.5" fill="var(--muted)">${moneyShort(r.total)}</text>`:""}<text x="${x+w/2}" y="${H-8}" text-anchor="middle" font-size="13" font-weight="${cur?800:600}" fill="var(--${r.has?"ink":"muted"})">${MONTHS[i][0]}</text>${cur?`<rect x="${x+w/2-7}" y="${H-3}" width="14" height="2.5" rx="1" fill="var(--ink)"/>`:""}</g>`; }).join("");
+    return `<g class="ybar" data-openmonth="${r.k}" style="cursor:${r.has?"pointer":"default"}"><title>${MONTHS[i]}: ${money(r.total)} (${money(r.needs)} needs, ${money(r.wants)} wants, ${money(r.bills)} bills)</title><rect x="${i*bw}" y="0" width="${bw}" height="${H}" fill="transparent"/>${r.has?`${seg(yb,hb+1,"var(--bill)")}${seg(yn,hn,"var(--need)")}${seg(yw,hw,"var(--want)")}${shownTot(r)>0.004?`<text x="${x+w/2}" y="${yw-5}" text-anchor="middle" font-size="11.5" fill="var(--muted)">${moneyShort(shownTot(r))}</text>`:""}`:""}<text x="${x+w/2}" y="${H-8}" text-anchor="middle" font-size="13" font-weight="${cur?800:600}" fill="var(--${r.has?"ink":"muted"})">${MONTHS[i][0]}</text>${cur?`<rect x="${x+w/2-7}" y="${H-3}" width="14" height="2.5" rx="1" fill="var(--ink)"/>`:""}</g>`; }).join("");
   const catT = {}; for (const r of active) for (const t of r.tx) if (!t.ignored) catT[t.cat]=(catT[t.cat]||0)+t.amount;
   const cats = Object.entries(catT).sort((a,b)=>b[1]-a[1]); const cmax = Math.max(1,...cats.map(c=>c[1]));
   const yi = years.indexOf(y);
@@ -489,13 +513,13 @@ function viewYear(){
   ${banner()}
   <div class="hero"><div class="lbl">Total spent in ${y}${y===cy?" so far":""}</div><div class="big">${money(tot.s+tot.b)}</div>
     <div style="display:flex;gap:6px 24px;flex-wrap:wrap;color:var(--hero-muted);font-size:.92rem"><span><b style="color:var(--hero-ink)">${money(tot.s)}</b> spending</span><span><b style="color:var(--hero-ink)">${money(tot.b)}</b> bills</span>${avg?`<span><b style="color:var(--hero-ink)">${money(avg)}</b> average full month</span>`:""}</div></div>
-  <section><div class="sh"><h2>Month by month</h2></div>
+  <section><div class="sh"><h2>Month by month</h2><div class="yfw" data-expwrap="yf"><button class="icon yfb ${yf!=="all"?"on":""}" data-exp="yf" aria-label="Choose what the chart shows" aria-expanded="${isOpen("yf")}" aria-haspopup="menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg></button>${isOpen("yf")?`<div class="yfm" role="menu">${[["all","Bills, needs and wants"],["bill","Just bills"],["need","Just needs"],["want","Just wants"]].map(([v,l])=>`<button role="menuitemradio" aria-checked="${yf===v}" data-yf="${v}">${v==="all"?`<span class="sws"><i class="sw" style="background:var(--bill)"></i><i class="sw" style="background:var(--need)"></i><i class="sw" style="background:var(--want)"></i></span>`:`<i class="sw" style="background:${catColor(v)}"></i>`}${l}</button>`).join("")}</div>`:""}</div></div>
     <svg class="ychart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Monthly totals for ${y}">${bars}</svg>
-    <div class="legend"><span><i class="sw" style="background:var(--want)"></i>Wants</span><span><i class="sw" style="background:var(--need)"></i>Needs</span><span><i class="sw" style="background:var(--bill)"></i>Bills</span></div></section>
+    <div class="legend">${show("want")?`<span><i class="sw" style="background:var(--want)"></i>Wants</span>`:""}${show("need")?`<span><i class="sw" style="background:var(--need)"></i>Needs</span>`:""}${show("bill")?`<span><i class="sw" style="background:var(--bill)"></i>Bills</span>`:""}</div></section>
   <section><table class="mtable"><thead><tr><th>Month</th><th>Spending</th><th>Bills</th><th>Total</th></tr></thead><tbody>
     ${active.map(r=>`<tr class="click" data-openmonth="${r.k}"><td>${MONTHS[mkeyParts(r.k).m-1]}</td><td>${money(r.spending)}</td><td>${money(r.bills)}</td><td class="b">${money(r.total)}</td></tr>`).join("")}
     </tbody><tfoot><tr><td>Year</td><td>${money(tot.s)}</td><td>${money(tot.b)}</td><td>${money(tot.s+tot.b)}</td></tr></tfoot></table></section>
-  ${cats.length?`<section><div class="sh"><h2>By category</h2><span class="aside">Spending only</span></div>${cats.map(([n,v])=>{ const g=catGroup(curK,n); return `<div class="brow"><div class="l"><span>${esc(n)}</span><span><b>${money(v)}</b> ${tot.s?Math.round(v/tot.s*100)+"%":""}</span></div><div class="track"><div class="fill" style="width:${Math.max(0,v)/cmax*100}%;background:${catColor(g)}"></div></div></div>`; }).join("")}</section>`:""}`;
+  ${cats.length?`<section><div class="sh"><h2>By category</h2><span class="aside">Share of everything spent</span></div>${cats.map(([n,v])=>{ const g=catGroup(curK,n); return `<div class="brow"><div class="l"><span>${esc(n)}</span><span><b>${money(v)}</b> ${(tot.s+tot.b)?Math.round(v/(tot.s+tot.b)*100)+"%":""}</span></div><div class="track"><div class="fill" style="width:${(tot.s+tot.b)>0?Math.min(100,Math.max(0,v)/(tot.s+tot.b)*100):0}%;background:${catColor(g)}"></div></div></div>`; }).join("")}</section>`:""}`;
 }
 function render(){
   document.body.classList.toggle("locked", !!S.locked);
@@ -515,6 +539,8 @@ document.addEventListener("click", e => {
     const inside = new Set(); let el = e.target; while (el && el!==document){ if (el.dataset && el.dataset.expwrap) inside.add(el.dataset.expwrap); el = el.parentElement; }
     const keep = V.open.filter(k=>inside.has(k)); if (keep.length!==V.open.length){ V.open = keep; render(); }
   }
+  const yfc = e.target.closest("[data-yf]");
+  if (yfc){ V.yf = yfc.dataset.yf; V.open = V.open.filter(k=>k!=="yf"); render(); return; }
   const ex = e.target.closest("[data-exp]");
   if (ex){ const key = ex.dataset.exp; if (V.open.includes(key)) V.open = V.open.filter(k=>k!==key && !k.startsWith(key+"|")); else V.open = V.open.concat([key]); render(); return; }
   const t = e.target.closest("[data-addday],[data-tab],[data-go],[data-day],[data-edit],[data-settings],[data-openmonth],[data-openweek],[data-profile],[data-back],[data-pact]");
