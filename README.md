@@ -35,7 +35,9 @@ In sandbox, Plaid's test login is `user_good` / `pass_good`.
 - New transactions come in every 3 hours, whenever you open the app (if it's been 15+ minutes), and when you tap **Sync now**.
 - Pending charges show as "Pending" and are replaced by the posted version; your edits carry over.
 - If you logged a purchase by hand and the same amount shows up from your bank within 3 days, they're merged instead of doubled.
-- Card payments, transfers, income, rent, and anything whose name matches one of your bills are marked "Not counted", since bills are already tracked separately. Open any purchase to flip "Count this toward spending".
+- Credit card payments, transfers and income are marked "Not counted". Open any purchase to flip "Count this toward spending".
+- Rent, utilities, phone and loan payments come in as "Unassigned". Assign one to a bill (Rent, Student Loans, ...) and that payee is assigned automatically from then on.
+- Bills are part of the monthly budget (Needs, Wants, Bills). A bill only counts as paid once a payment is assigned to it.
 - Deleting a synced purchase keeps it deleted; later syncs won't bring it back.
 - Categories come from the places you've tagged before, then from Plaid's category (groceries, gas, restaurants), then Misc.
 
