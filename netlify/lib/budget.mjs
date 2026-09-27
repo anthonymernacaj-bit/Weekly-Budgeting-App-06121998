@@ -36,12 +36,8 @@ export const plaidError = e => e?.response?.data || { error_message: e?.message 
 
 /* ---- date + budget helpers (same rules as the app) ---- */
 const pad = n => String(n).padStart(2, "0");
-export function mkeyOf(isoDate) {
-  const [y, m, d] = isoDate.split("-").map(Number);
-  const dt = new Date(Date.UTC(y, m - 1, d));
-  dt.setUTCDate(dt.getUTCDate() + (6 - dt.getUTCDay())); // Saturday of that Sunday–Saturday week
-  return `${dt.getUTCFullYear()}-${pad(dt.getUTCMonth() + 1)}`;
-}
+// Purchases belong to the calendar month of their date (budgets reset on the 1st).
+export function mkeyOf(isoDate) { return String(isoDate).slice(0, 7); }
 const daysBetween = (a, b) => Math.abs((Date.parse(a) - Date.parse(b)) / 864e5);
 export const norm = s => String(s || "").toLowerCase().replace(/[^a-z0-9 ]/g, "").replace(/\s+/g, " ").trim();
 const round2 = n => Math.round(n * 100) / 100;

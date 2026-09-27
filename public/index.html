@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Weekly Budget</title>
 <meta name="theme-color" content="#EDF1EA" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0B1510" media="(prefers-color-scheme: dark)">
@@ -21,7 +21,7 @@
 :root{
   --bg:#EDF1EA; --surface:#FFFFFF; --ink:#17251D; --muted:#617066; --line:#D3DCD1; --track:#DEE6DB;
   --hero:#1E4A37; --hero-ink:#EAF3EC; --hero-muted:#A9C4B3; --hero-bar:#8FC7A6;
-  --need:#2D6A4C; --want:#B8741A; --over:#B0392A; --bill:#5E7C8A;
+  --ok:#2D7A50; --billbar:#2A3A31; --need:#2D6A4C; --want:#B8741A; --over:#B0392A; --bill:#5E7C8A;
   --font:"Schibsted Grotesk", "Helvetica Neue", Arial, system-ui, sans-serif;
   --grad:radial-gradient(75% 42% at 0% 0%,rgba(150,196,165,.55) 0%,rgba(150,196,165,.18) 45%,transparent 75%),#EDF1EA;
   box-sizing:border-box;
@@ -31,20 +31,20 @@
   :root:not([data-theme="light"]){
     --bg:#0F1612; --surface:#18211C; --ink:#E2EBE4; --muted:#8E9E94; --line:#29352E; --track:#233029;
     --hero:#163A2B; --hero-ink:#E6F2EA; --hero-muted:#93B3A0; --hero-bar:#6FB690;
-    --need:#62B38C; --want:#E3A24B; --over:#E6705D; --bill:#7FA3B3;
+    --ok:#5CC08B; --billbar:#F2F6F3; --need:#62B38C; --want:#E3A24B; --over:#E6705D; --bill:#7FA3B3;
     --grad:radial-gradient(75% 42% at 0% 0%,rgba(46,104,76,.85) 0%,rgba(24,60,43,.45) 42%,transparent 75%),linear-gradient(180deg,#0B1510 0%,#070D0A 100%);
   }
 }
 :root[data-theme="dark"]{
   --bg:#0F1612; --surface:#18211C; --ink:#E2EBE4; --muted:#8E9E94; --line:#29352E; --track:#233029;
   --hero:#163A2B; --hero-ink:#E6F2EA; --hero-muted:#93B3A0; --hero-bar:#6FB690;
-  --need:#62B38C; --want:#E3A24B; --over:#E6705D; --bill:#7FA3B3;
+  --ok:#5CC08B; --billbar:#F2F6F3; --need:#62B38C; --want:#E3A24B; --over:#E6705D; --bill:#7FA3B3;
   --grad:radial-gradient(75% 42% at 0% 0%,rgba(46,104,76,.85) 0%,rgba(24,60,43,.45) 42%,transparent 75%),linear-gradient(180deg,#0B1510 0%,#070D0A 100%);
 }
 *,*::before,*::after{box-sizing:border-box}
 /* Fixed gradient layer (works on iPhone, where background-attachment:fixed doesn't) */
 body::before{content:"";position:fixed;inset:0;z-index:-1;background:var(--grad);pointer-events:none}
-html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%;height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
 button,input,select{font:inherit;color:inherit}
 input,textarea{caret-color:transparent}
@@ -100,7 +100,10 @@ button{cursor:pointer}
 .ph .pr{display:flex;align-items:center;gap:10px;white-space:nowrap}
 .ph .pr b{font-size:1.1rem}
 .ph .pr .of{font-size:.85rem;font-weight:500;color:var(--muted)}
-.pbox .pin>.grp{margin:12px 0 0}
+.pbox .pin>.grp,.pbox .pin>.gblk>.grp{margin:12px -8px;padding:2px 12px 0}
+.pbox .pin>.gblk{margin:0}
+.pbox .pin .grp .tx{gap:10px}
+.pbox .pin .grp .tx .a{min-width:0}
 .pbox .pin>.tx:last-child{border-bottom:0}
 .ph:hover .pt b{text-decoration:underline;text-underline-offset:3px}
 .pbox.open{border-color:var(--ink)}
@@ -120,13 +123,21 @@ button{cursor:pointer}
 .wkx .tx:last-child{border-bottom:0}
 .pbox .brow:last-child{border-bottom:0}
 .pbox .pin{border-top:1px solid var(--line);padding:0 18px 8px}
-.pbox .daygrp:last-child .tx:last-child{border-bottom:0}
+/* each day in "Purchases this week" sits in its own rounded card */
+.pbox .daygrp{border:1px solid var(--line);border-radius:14px;padding:2px 12px 0;margin:12px -8px}
+.pbox .daygrp .tx{gap:10px}
+.pbox .daygrp .tx .a{min-width:0}
+.pbox .daygrp:last-child{margin-bottom:10px}
+.pbox .daygrp .dh{padding:10px 0 2px}
+.pbox .daygrp .tx:last-child{border-bottom:0}
+.pbox .daygrp .tx{border-bottom-color:color-mix(in srgb,var(--line) 70%,transparent)}
 
 /* sections */
 section{margin-bottom:30px}
 .sh{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 12px}
 .sh h2{font-size:1.2rem;font-weight:700;letter-spacing:-.015em;margin:0}
 .sh .aside{color:var(--muted);font-size:.9rem;text-align:right}
+.overtxt{color:var(--over);font-weight:600}
 .figs{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden}
 .fig{background:var(--surface);padding:14px 14px 12px}
 .fig .k{font-size:.82rem;color:var(--muted)}
@@ -134,7 +145,12 @@ section{margin-bottom:30px}
 .fig.tot .v{font-weight:800}
 .note{font-size:.85rem;color:var(--muted);margin-top:8px}
 
-.grp{margin-bottom:18px}
+.grp{margin-bottom:12px;border:1px solid var(--line);border-radius:14px;padding:2px 14px 0}
+.gblk{margin-bottom:18px}
+.gblk>.gh{border-bottom:0;padding:0 2px 8px;margin:0}
+.gblk>.grp{margin-bottom:0}
+.grp>.brow:last-child,.grp>.cx:last-child,.grp>.tx:last-child{border-bottom:0}
+.grp>.dh{padding:10px 0 2px}
 .gh{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--ink);padding-bottom:6px;margin-bottom:4px}
 .gh .n{font-weight:700;display:flex;align-items:center;gap:8px}
 .sw{width:10px;height:10px;border-radius:3px;display:inline-block;flex:none}
@@ -147,7 +163,10 @@ section{margin-bottom:30px}
 .brow .l b{color:var(--ink);font-weight:600}
 .track{height:8px;background:var(--track);border-radius:4px;margin-top:7px;overflow:hidden}
 .fill{height:100%;border-radius:4px}
-.over .l span:last-child{color:var(--over)}
+.brow .l span.amt{font-weight:700;white-space:nowrap}
+.brow .l span.amt.ok{color:var(--ok)}
+.brow .l span.amt.bad{color:var(--over)}
+.brow .l span.amt.neu{color:var(--ink)}
 .over .fill{background:var(--over)!important}
 .fill{position:relative;display:block}
 .wseg{position:absolute;right:0;top:0;bottom:0;background:repeating-linear-gradient(135deg,rgba(255,255,255,.45) 0 3px,transparent 3px 6px);border-radius:0 4px 4px 0}
@@ -169,6 +188,13 @@ section{margin-bottom:30px}
 .empty{color:var(--muted);padding:14px 0;font-size:.95rem}
 
 .wbars{display:flex;flex-direction:column;gap:8px}
+.wpills{display:flex;flex-direction:column;gap:10px}
+.wpill{position:relative;display:flex;justify-content:space-between;align-items:center;width:100%;padding:15px 22px;border-radius:999px;border:0;background:var(--glow);text-align:left;font-size:.98rem;isolation:isolate}
+/* the two-color outline, drawn as a ring so the inside stays see-through */
+.wpill::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:2.5px;background:var(--ring);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);pointer-events:none}
+.wpill .wl{font-weight:600}
+.wpill .wr{font-weight:700}
+.wpill:hover .wl{text-decoration:underline;text-underline-offset:3px}
 .wb{display:grid;grid-template-columns:92px 1fr 84px;gap:10px;align-items:center;font-size:.9rem;border:0;background:transparent;padding:4px 0;text-align:left;width:100%}
 .wb .r{text-align:right;font-weight:600}
 .wb .track{margin:0;height:12px}
@@ -224,6 +250,23 @@ dialog::backdrop{background:rgba(10,20,14,.45)}
 .field label,.flabel{display:block;font-size:.85rem;color:var(--muted);margin-bottom:6px}
 .inp{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:12px 14px}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
+#fCats{min-height:var(--pickH)}
+.field:has(#fCats){--pickH:147px}
+.gpills{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;height:var(--pickH)}
+.lblnote{color:var(--muted);font-weight:400}
+.gpill{border:1.5px solid var(--line);background:transparent;border-radius:18px;padding:14px 12px 12px;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:3px;text-align:left;min-width:0;transition:background .15s,border-color .15s}
+.gpill .gl{display:flex;align-items:center;gap:7px;font-weight:700;font-size:1.02rem}
+.gpill .gs{font-size:.8rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.gpill.on{border-color:var(--gc);background:color-mix(in srgb,var(--gc) 16%,transparent)}
+.gpill .gs.pick{color:var(--gc);font-weight:700;font-size:.9rem}
+.gpanel{min-height:var(--pickH);box-sizing:border-box;border:1.5px solid var(--gc);background:color-mix(in srgb,var(--gc) 10%,transparent);border-radius:18px;padding:2px 12px 12px;transform-origin:var(--ox) top;animation:gOpen .22s cubic-bezier(.2,.8,.2,1)}
+@keyframes gOpen{from{opacity:0;transform:scale(.9,.6)}to{opacity:1;transform:none}}
+.gph{display:flex;justify-content:space-between;align-items:center;width:100%;border:0;background:transparent;padding:10px 2px 10px;font-weight:700}
+.gph span{display:flex;align-items:center;gap:8px}
+.gph svg{width:18px;height:18px;color:var(--muted)}
+.gchips{display:flex;flex-wrap:wrap;gap:8px}
+.gchip{border:1.5px solid color-mix(in srgb,var(--gc) 45%,transparent);background:var(--surface);border-radius:999px;padding:8px 14px;font-size:.95rem;transition:background .12s}
+.gchip[aria-pressed="true"]{background:var(--gc);border-color:var(--gc);color:var(--bg);font-weight:700}
 .chip{border:1.5px solid var(--line);background:transparent;border-radius:999px;padding:7px 14px;display:flex;align-items:center;gap:7px;font-size:.92rem}
 .chip[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--bg)}
 .row{display:flex;gap:10px;align-items:center}
@@ -254,6 +297,8 @@ dialog::backdrop{background:rgba(10,20,14,.45)}
 body.locked .tabs,body.locked .fab{display:none}
 .pacts{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
 .pacts .btn{flex:1 1 auto;white-space:nowrap;padding:13px 16px}
+.sbar{position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);z-index:30;background:color-mix(in srgb,var(--bg) 82%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);pointer-events:none}
+@media (pointer:coarse){input,select,textarea{font-size:16px!important}.amtin input{font-size:2.4rem!important}}
 .toast{position:fixed;left:50%;bottom:calc(140px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:.9rem;z-index:20;opacity:0;pointer-events:none;transition:opacity .2s}
 .toast.on{opacity:1}
 .loading{padding:60px 0;text-align:center;color:var(--muted)}
@@ -262,6 +307,7 @@ body.locked .tabs,body.locked .fab{display:none}
 </style>
 </head>
 <body>
+<div class="sbar" aria-hidden="true"></div>
 <main class="wrap" id="app"><div class="loading">Loading your budget…</div></main>
 
 <nav class="tabs" aria-label="Views"><div class="in">
@@ -292,15 +338,22 @@ const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`
 const parseISO = s => { const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); };
 const addDays = (d,n) => { const x=new Date(d.getFullYear(),d.getMonth(),d.getDate()); x.setDate(x.getDate()+n); return x; };
 const sow = d => addDays(d,-d.getDay());
-/* A week belongs to the month its Saturday falls in (same rule as the spreadsheet) */
-const mkeyOf = d => { const s=addDays(sow(d),6); return `${s.getFullYear()}-${pad(s.getMonth()+1)}`; };
+/* Purchases belong to the calendar month of their date; budgets reset on the 1st */
+const mkeyOf = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}`;
+const monthOfIso = s => s.slice(0,7);
+/* The day a week is "looked at" from: today while the week is under way, otherwise its Saturday */
+const weekRef = w => { const t=today(), e=addDays(w,6); return (iso(t)>=iso(w) && iso(t)<=iso(e)) ? t : e; };
+const lastOfMonth = k => { const {y,m}=mkeyParts(k); return new Date(y,m,0); };
 const mkeyParts = k => { const [y,m]=k.split("-").map(Number); return {y,m}; };
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const DOW = ["S","M","T","W","T","F","S"];
 const DOWL = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const monthName = k => { const {y,m}=mkeyParts(k); return `${MONTHS[m-1]} ${y}`; };
 const shiftMonth = (k,n) => { const {y,m}=mkeyParts(k); const d=new Date(y,m-1+n,1); return `${d.getFullYear()}-${pad(d.getMonth()+1)}`; };
-const weeksOfMonth = k => { const {y,m}=mkeyParts(k); let w=sow(new Date(y,m-1,1)); if (mkeyOf(w)!==k) w=addDays(w,7); const out=[]; while (mkeyOf(w)===k){ out.push(w); w=addDays(w,7);} return out; };
+/* Every Sunday–Saturday week that has at least one day in month k */
+const weeksOfMonth = k => { const {y,m}=mkeyParts(k); const last=lastOfMonth(k); const out=[]; for (let w=sow(new Date(y,m-1,1)); w<=last; w=addDays(w,7)) out.push(w); return out; };
+/* The part of week w that falls inside month k, as a label like "Sep 27–30" */
+const clipLabel = (w,k) => { const {y,m}=mkeyParts(k); const a=new Date(Math.max(w, new Date(y,m-1,1))), e=addDays(w,6), b=new Date(Math.min(e, lastOfMonth(k))); const A=`${MONTHS[a.getMonth()].slice(0,3)} ${a.getDate()}`; return iso(a)===iso(b)?A:`${A}–${b.getMonth()===a.getMonth()?"":MONTHS[b.getMonth()].slice(0,3)+" "}${b.getDate()}`; };
 const rangeLabel = w => { const e=addDays(w,6); const a=`${MONTHS[w.getMonth()].slice(0,3)} ${w.getDate()}`; const b=(e.getMonth()===w.getMonth()?"":MONTHS[e.getMonth()].slice(0,3)+" ")+e.getDate(); return `${a}–${b}`; };
 const uid = () => "t"+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const clone = o => JSON.parse(JSON.stringify(o));
@@ -330,7 +383,8 @@ const needsMigration = st => !!st && (Array.isArray(st.bills) || (st.versions||[
 const S = { settings:null, months:{}, tomb:[], ready:false, mode:"db", locked:false };
 const today = () => new Date();
 let lastOpen = new Set();
-const V = { open:[], tab:"week", week: sow(today()), day:null, month: mkeyOf(today()), year: null };
+const savedYf = (()=>{ try { return localStorage.getItem("wb-yf") || "all"; } catch(e){ return "all"; } })();
+const V = { yf: savedYf, open:[], tab:"week", week: sow(today()), day:null, month: mkeyOf(today()), year: null };
 
 /* ---------- storage backend ---------- */
 let col = null; const queues = {};
@@ -346,7 +400,16 @@ function ingest(docs){
   const months = {}; let settings = null;
   S.tomb = [];
   for (const [id,d] of docs){ if (id==="settings") settings=d; else if (id==="tombstones") S.tomb=(d&&d.ids)||[]; else if (d && d.month) months[d.month]=d; }
+  const moved = new Set();
+  for (const k of Object.keys(months)){
+    const stay = [], go = [];
+    for (const t of (months[k].tx||[])) (t.date && monthOfIso(t.date)!==k ? go : stay).push(t);
+    if (!go.length) continue;
+    months[k] = {...months[k], tx: stay}; moved.add(k);
+    for (const t of go){ const nk = monthOfIso(t.date); months[nk] = months[nk] ? {...months[nk], tx: (months[nk].tx||[]).filter(x=>x.id!==t.id).concat([t])} : {kind:"month", month:nk, tx:[t]}; moved.add(nk); }
+  }
   S.months = months; S.settings = normalizeSettings(settings || S.settings || DEFAULT_SETTINGS, months);
+  for (const k of moved) persist("m-"+k, months[k]);
   if (settings && needsMigration(settings)) persist("settings", S.settings);   // save the new shape once
   if (!settings && S.ready===false && S.mode==="db") {/* first run for a new viewer */}
   S.ready = true; render();
@@ -372,7 +435,7 @@ const monthDoc = k => S.months[k] || {kind:"month", month:k, tx:[]};
 const monthTx = k => (S.months[k]?.tx) || [];
 const budgetFor = k => cfgFor(k).categories;
 const sum = arr => round2(arr.reduce((a,t)=>a+(t.ignored?0:t.amount),0));
-const spendSum = (arr, k) => round2(arr.reduce((a,t)=>a+(t.ignored || catGroup(k,t.cat)==="bill" ? 0 : t.amount),0));
+const spendSum = arr => round2(arr.reduce((a,t)=>a+(t.ignored || catGroup(monthOfIso(t.date),t.cat)==="bill" ? 0 : t.amount),0));
 const catGroup = (k, name) => { const c = budgetFor(k).find(c=>c.name===name); if (c) return c.group; for (const v of S.settings.versions.slice().reverse()){ const x=v.categories.find(c=>c.name===name); if (x) return x.group; } };
 const catColor = g => g==="want" ? "var(--want)" : g==="need" ? "var(--need)" : g==="bill" ? "var(--bill)" : "var(--muted)";
 function monthStats(k){
@@ -381,7 +444,8 @@ function monthStats(k){
   spending = round2(spending); bills = round2(bills);
   return { spending, bills, total: round2(spending+bills), tx };
 }
-function weekTx(w){ const a=iso(w), b=iso(addDays(w,6)); return monthTx(mkeyOf(w)).filter(t=>t.date>=a && t.date<=b); }
+function weekTx(w, onlyMonth){ const a=iso(w), b=iso(addDays(w,6)); const ks=[...new Set([mkeyOf(w), mkeyOf(addDays(w,6))])].filter(k=>!onlyMonth||k===onlyMonth); return ks.flatMap(k=>monthTx(k)).filter(t=>t.date>=a && t.date<=b); }
+const findTx = id => { for (const k in S.months){ const t=(S.months[k].tx||[]).find(x=>x.id===id); if (t) return t; } return null; };
 
 /* ---------- components ---------- */
 function budgetBlock(k, wk, expand, only, bare){
@@ -395,20 +459,21 @@ function budgetBlock(k, wk, expand, only, bare){
     const cs = cats.filter(c=>c.group===g); if (!cs.length) continue;
     const lim = cs.reduce((a,c)=>a+(+c.limit||0),0), sp = cs.reduce((a,c)=>a+(spent[c.name]||0),0);
     const gw = wk ? round2(cs.reduce((a,c)=>a+(wsp[c.name]||0),0)) : 0;
-    html += `<div class="grp"><div class="gh"><span class="n"><i class="sw" style="background:${catColor(g)}"></i>${label}${wk&&g==="bill"?`<span class="gwk">${money(gw)} this week</span>`:""}</span><span class="t"><b>${money(sp)}</b> of ${money(lim)}</span></div>`;
+    html += `<div class="gblk"><div class="gh"><span class="n"><i class="sw" style="background:${catColor(g)}"></i>${label}${wk&&g==="bill"?`<span class="gwk">${money(gw)} this week</span>`:""}</span><span class="t"><b>${money(sp)}</b> of ${money(lim)}</span></div><div class="grp">`;
     for (const c of cs){
       const s = round2(spent[c.name]||0), l = +c.limit||0, over = s>l, pct = l ? Math.max(0,Math.min(100,s/l*100)) : 0;
       const w = round2(wsp[c.name]||0), wpct = (wk && l && w>0) ? Math.min(pct, w/l*100) : 0;
-      const inner = `<div class="l"><span>${esc(c.name)}${wk&&w?`<span class="wk">${w>0?"+":""}${money(w)} this week</span>`:""}</span><span><b>${money(s)}</b> of ${money(l)}${over?` · ${money(s-l)} over`:""}</span></div><div class="track"><div class="fill" style="width:${pct}%;background:${catColor(g)}">${wpct?`<i class="wseg" style="width:${wpct/pct*100}%"></i>`:""}</div></div>`;
-      html += expand ? catRow(k, c.name, inner, `brow ${over?"over":""}`) : `<div class="brow ${over?"over":""}">${inner}</div>`;
+      const inner = `<div class="l"><span>${esc(c.name)}${wk&&w?`<span class="wk">${w>0?"+":""}${money(w)} this week</span>`:""}</span><span class="amt ${g==="bill"?"neu":(over?"bad":"ok")}">${money(s)}/${money(l)}</span></div><div class="track"><div class="fill" style="width:${pct}%;background:var(--${g==="bill"?"billbar":(over?"over":"ok")})"></div></div>`;
+      const rc = `brow ${over&&g!=="bill"?"over":""}`;   /* bills: the bar stays white even when over; only the amount turns red */
+      html += expand ? catRow(k, c.name, inner, rc) : `<div class="${rc}">${inner}</div>`;
     }
-    html += `</div>`;
+    html += `</div></div>`;
   }
   const extra = only && !only.includes("need") ? [] : Object.keys(spent).filter(n=>!cats.some(c=>c.name===n) && Math.abs(spent[n])>0.004);
   if (extra.length){
-    html += `<div class="grp"><div class="gh"><span class="n"><i class="sw" style="background:var(--muted)"></i>Not budgeted</span><span class="t"><b>${money(extra.reduce((a,n)=>a+spent[n],0))}</b></span></div>`;
+    html += `<div class="gblk"><div class="gh"><span class="n"><i class="sw" style="background:var(--muted)"></i>Not budgeted</span><span class="t"><b>${money(extra.reduce((a,n)=>a+spent[n],0))}</b></span></div><div class="grp">`;
     for (const n of extra){ const inner = `<div class="l"><span>${esc(n)}</span><span><b>${money(spent[n])}</b></span></div>`; html += expand ? catRow(k, n, inner, "brow") : `<div class="brow">${inner}</div>`; }
-    html += `</div>`;
+    html += `</div></div>`;
   }
   return bare ? html.replace(/<div class="gh">[\s\S]*?<\/div>/g, "") : html;
 }
@@ -416,6 +481,14 @@ function catRow(k, name, inner, cls){
   const key = "cat|"+name, o = isOpen(key);
   const items = newestFirst(monthTx(k).filter(t=>t.cat===name));
   return `<div class="${cls} cx ${o?"open":""}" data-expwrap="${esc(key)}"><button class="bbtn" data-exp="${esc(key)}" aria-expanded="${o}">${inner}</button>${o?`<div class="dayx ${grows(key)?"grow":""}" style="margin-top:0"><div class="in" style="border:0;padding:0"><div class="catx" style="border-left-color:${catColor(catGroup(k,name))}">${items.length?items.map(t=>txRow(t,k,true)).join(""):`<p class="empty">Nothing in ${esc(name)} this month.</p>`}</div></div></div>`:""}</div>`;
+}
+/* "$X left" or "$X over" for a set of budget categories, counting only purchases that count */
+function leftOver(k, cats, upto){
+  const lim = round2(cats.reduce((a,c)=>a+(+c.limit||0),0)); if (!lim) return "";
+  const names = new Set(cats.map(c=>c.name));
+  const spent = round2(monthTx(k).filter(t=>!t.ignored && names.has(t.cat) && (!upto || t.date<=upto)).reduce((a,t)=>a+t.amount,0));
+  const d = round2(lim - spent);
+  return d >= 0 ? `${money(d)} left` : `<span class="overtxt">${money(-d)} over</span>`;
 }
 function figs(st){
   return `<div class="figs"><div class="fig"><div class="k">Spending</div><div class="v">${money(st.spending)}</div></div><div class="fig"><div class="k">Bills</div><div class="v">${money(st.bills)}</div></div><div class="fig tot"><div class="k">Total spent</div><div class="v">${money(st.total)}</div></div></div>`;
@@ -427,8 +500,8 @@ function box(key, title, sub, right, body){
   return `<div class="pbox ${o?"open":""}" data-expwrap="${esc(key)}"><button class="ph" data-exp="${esc(key)}" aria-expanded="${o}"><span class="pt"><b>${title}</b>${sub?`<span>${sub}</span>`:""}</span><span class="pr"><b>${right}</b></span></button>${o?`<div class="dayx ${grows(key)?"grow":""}" style="margin-top:0"><div class="in pin">${body}</div></div>`:""}</div>`;
 }
 const newestFirst = arr => arr.map((t,i)=>[t,i]).sort((a,b)=> a[0].date===b[0].date ? b[1]-a[1] : (a[0].date<b[0].date?1:-1)).map(x=>x[0]);
-function txRow(t, k, showDate){
-  const g = catGroup(k, t.cat); const d = parseISO(t.date);
+function txRow(t, _k, showDate){
+  const k = monthOfIso(t.date); const g = catGroup(k, t.cat); const d = parseISO(t.date);
   const meta = [t.account, t.pending?"Pending":"", t.ignored?"Not counted":""].filter(Boolean).join(" · ");
   return `<button class="tx ${t.ignored?"ign":""}" data-edit="${esc(t.id)}" data-month="${k}"><span class="nm"><span class="nt">${esc(t.name)}</span>${meta?`<small>${esc(meta)}</small>`:""}</span><span class="ct"><i class="sw" style="background:${catColor(g)}"></i>${showDate?`${DOWL[d.getDay()].slice(0,3)}, ${MONTHS[d.getMonth()].slice(0,3)} ${d.getDate()}`:esc(t.cat)}</span><span class="a ${t.amount<0?"neg":""}">${money(t.amount)}</span></button>`;
 }
@@ -439,13 +512,13 @@ const banner = () => S.mode==="local" ? `<div class="banner">Saving in this brow
 
 /* ---------- views ---------- */
 function viewWeek(){
-  const w = V.week, k = mkeyOf(w), tx = weekTx(w), isCur = iso(w)===iso(sow(today()));
-  const days = [...Array(7)].map((_,i)=>{ const d=addDays(w,i), ds=iso(d); const items=tx.filter(t=>t.date===ds); return {d, ds, items, total: spendSum(items,k)}; });
+  const w = V.week, ref = weekRef(w), k = mkeyOf(ref), tx = weekTx(w), isCur = iso(w)===iso(sow(today()));
+  const days = [...Array(7)].map((_,i)=>{ const d=addDays(w,i), ds=iso(d); const items=tx.filter(t=>t.date===ds); return {d, ds, items, total: spendSum(items)}; });
   const max = Math.max(1, ...days.map(d=>d.total));
   const tIso = iso(today());
   const strip = days.map((d,i)=>`<button class="day ${d.ds===tIso?"today":""} ${V.day===d.ds?"sel":""} ${V.day&&V.day!==d.ds?"dim":""}" data-day="${d.ds}" aria-label="${DOWL[i]} ${d.d.getDate()}, ${money(d.total)}" aria-pressed="${V.day===d.ds}"><span class="col"><span class="bar" style="height:${Math.max(0,d.total)/max*100}%"></span></span><span class="amt">${d.total?moneyShort(d.total):"–"}</span><span class="dn">${DOW[i]}</span></button>`).join("");
   const st = monthStats(k); const {m} = mkeyParts(k);
-  const isBill = t => catGroup(k,t.cat)==="bill";
+  const isBill = t => catGroup(monthOfIso(t.date),t.cat)==="bill";
   const shown = days.map(d=>({...d, items: d.items.filter(t=>!isBill(t)).reverse()})).filter(d=>d.items.length).reverse();
   const sd = V.day ? days.find(d=>d.ds===V.day) : null; const grow = V.day && V.day!==lastDay; lastDay = V.day; 
   const expand = sd ? `<div class="dayx ${grow?"grow":""}" id="dayx"><div class="in"><div class="dxh"><b>${DOWL[sd.d.getDay()]}, ${MONTHS[sd.d.getMonth()].slice(0,3)} ${sd.d.getDate()}</b><span class="r">${money(sd.total)}</span></div>${sd.items.length?sd.items.map(t=>txRow(t,k)).join(""):`<p class="empty">Nothing logged this day.</p>`}<button class="addday" data-addday="${sd.ds}">Add a purchase to this day</button></div></div>` : "";
@@ -455,34 +528,48 @@ function viewWeek(){
   const billTx = newestFirst(tx.filter(isBill)), billsWeek = round2(billTx.reduce((a,t)=>a+(t.ignored?0:t.amount),0));
   const billsToDate = round2(monthTx(k).filter(t=>t.date<=iso(addDays(w,6)) && !t.ignored && isBill(t)).reduce((a,t)=>a+t.amount,0));
   const billsBody = (billCats.length ? budgetBlock(k, w, false, ["bill"], true) : `<p class="empty">No bills in this month's budget. Add them in settings.</p>`)
-    + `<div class="dh" style="padding-top:14px"><span>Paid this week</span><span>${money(billsWeek)}</span></div>`
-    + (billTx.length ? billTx.map(t=>txRow(t,k,true)).join("") : `<p class="empty" style="padding-top:4px">No bill payments this week.</p>`);
-  const uptoW = iso(addDays(w,6)); const spentIn = monthTx(k).filter(t=>t.date<=uptoW && cats.some(c=>c.name===t.cat)).reduce((a,t)=>a+t.amount,0);
-  const lastWeek = iso(addDays(weeksOfMonth(k).slice(-1)[0],0))===iso(w);
+    + `<div class="grp"><div class="dh"><span>Paid this week</span><span>${money(billsWeek)}</span></div>`
+    + (billTx.length ? billTx.map(t=>txRow(t,k,true)).join("") : `<p class="empty" style="padding:4px 0 12px">No bill payments this week.</p>`) + `</div>`;
+  const uptoW = iso(ref); const spentIn = monthTx(k).filter(t=>t.date<=uptoW && cats.some(c=>c.name===t.cat)).reduce((a,t)=>a+t.amount,0);
+  const lastWeek = iso(ref)===iso(lastOfMonth(k));
   return `${nav(isCur?"This week":rangeLabel(w), "w-1", "w+1", isCur?"":`<button class="jump" data-go="w0">Today</button>`)}
   ${banner()}
   <div class="hero"><div class="lbl">${isCur?"Spent this week":"Spent the week of "+rangeLabel(w)}${isCur?`, ${rangeLabel(w)}`:""}</div>
-    <div class="big">${money(spendSum(tx,k))}</div><div class="strip">${strip}</div>${expand}</div>
+    <div class="big">${money(spendSum(tx))}</div><div class="strip">${strip}</div>${expand}</div>
   <section><div class="sh"><h2>${MONTHS[m-1]}${k===mkeyOf(today())?" so far":""}</h2><span class="aside">${weeksOfMonth(k).length} weeks</span></div>${figs(st)}</section>
-  <section><div class="sh"><h2>${isCur||lastWeek?"Budget":"Budget through "+MONTHS[addDays(w,6).getMonth()].slice(0,3)+" "+addDays(w,6).getDate()}</h2><span class="aside">${lim?(lim-spentIn>=0?`${money(lim-spentIn)} left of ${money(lim)}`:`${money(spentIn-lim)} over ${money(lim)}`):""}</span></div>${budgetBlock(k, w, false, ["need","want"])}</section>
-  <section class="stack">${box("wk", "Purchases this week", `${tx.length-billTx.length} logged`, money(spendSum(tx,k)), list)}
+  <section><div class="sh"><h2>${isCur||lastWeek?"Budget":"Budget through "+MONTHS[ref.getMonth()].slice(0,3)+" "+ref.getDate()}</h2><span class="aside">${leftOver(k, cats, iso(addDays(w,6)))}</span></div>${budgetBlock(k, w, false, ["need","want"])}</section>
+  <section class="stack">${box("wk", "Purchases this week", `${tx.length-billTx.length} logged`, money(spendSum(tx)), list)}
   ${box("wkb", "Bills", `${money(billsWeek)} this week`, billLim?`${money(billsToDate)} <span class="of">of ${money(billLim)}</span>`:money(billsToDate), billsBody)}</section>`;
 }
 function viewMonth(){
   const k = V.month, st = monthStats(k), weeks = weeksOfMonth(k);
-  const wt = weeks.map(w=>({w, t: sum(weekTx(w))})); const max = Math.max(1,...wt.map(x=>x.t));
+  const wt = weeks.map(w=>{ let n=0, wa=0, o=0; for (const t of weekTx(w,k)){ if (t.ignored) continue; const g=catGroup(monthOfIso(t.date),t.cat); if (g==="bill") continue; if (g==="need") n+=t.amount; else if (g==="want") wa+=t.amount; else o+=t.amount; } return {w, n:Math.max(0,n), wa:Math.max(0,wa), o:Math.max(0,o), t: round2(n+wa+o)}; });
+  /* outline split left-to-right: needs green, wants orange, anything unbudgeted grey */
+  const pillStyle = x => {
+    const tot = x.n+x.wa+x.o; if (tot<=0.004) return "--ring:var(--line);--glow:none";
+    const segs = [["var(--need)",x.n/tot],["var(--want)",x.wa/tot],["var(--muted)",x.o/tot]].filter(s=>s[1]>0.0001);
+    /* outline: each color gets its share, with a soft blend where they meet */
+    const B = 14; let pos = 0; const stops = [];
+    segs.forEach(([c,f],i)=>{ const a = pos*100, b = (pos+f)*100; pos += f;
+      stops.push(`${c} ${i===0?0:Math.min(b, a+B/2).toFixed(1)}%`, `${c} ${i===segs.length-1?100:Math.max(a, b-B/2).toFixed(1)}%`); });
+    const ring = segs.length===1 ? segs[0][0] : `linear-gradient(90deg, ${stops.join(", ")})`;
+    /* glow: the left end takes the first color, the right end the last, stronger the bigger that color's share */
+    const glow = (c,f,side) => `radial-gradient(38% 150% at ${side} 50%, color-mix(in srgb, ${c} ${Math.round(4+18*f)}%, transparent), transparent 100%)`;
+    const L = segs[0], Rt = segs[segs.length-1];
+    return `--ring:${ring};--glow:${glow(L[0],L[1],"0%")}, ${glow(Rt[0],Rt[1],"100%")}`;
+  };
   const merch = {}; for (const t of st.tx){ if (t.ignored) continue; const n=norm(t.name); merch[n]=merch[n]||{n:t.name,t:0,c:0}; merch[n].t+=t.amount; merch[n].c++; }
   const top = Object.values(merch).filter(x=>x.t>0).sort((a,b)=>b.t-a.t).slice(0,6);
   const isCur = k===mkeyOf(today());
   return `${nav(monthName(k),"m-1","m+1", isCur?"":`<button class="jump" data-go="m0">Now</button>`, true)}
   ${banner()}
   <section>${figs(st)}${st.tx.length?"":`<p class="note">Nothing logged for ${MONTHS[mkeyParts(k).m-1]}.</p>`}</section>
-  <section><div class="sh"><h2>By week</h2><span class="aside">Sunday to Saturday</span></div>
-    <div class="wbars">${wt.map(x=>`<button class="wb" data-openweek="${iso(x.w)}"><span class="l">${rangeLabel(x.w)}</span><span class="track"><span class="fill" style="display:block;width:${Math.max(0,x.t)/max*100}%"></span></span><span class="r">${money(x.t)}</span></button>`).join("")}</div></section>
-  <section><div class="sh"><h2>Budget</h2><span class="aside">Tap a category to see its purchases</span></div>${budgetBlock(k, null, true)}</section>
+  <section><div class="sh"><h2>By week</h2><span class="aside legend" style="margin:0"><span><i class="sw" style="background:var(--need)"></i>Needs</span><span><i class="sw" style="background:var(--want)"></i>Wants</span></span></div>
+    <div class="wpills">${wt.map(x=>`<button class="wpill" data-openweek="${iso(x.w)}" style="${pillStyle(x)}" aria-label="${clipLabel(x.w,k)}: ${money(x.t)}${x.t?`, ${Math.round(x.n/(x.n+x.wa+x.o||1)*100)}% needs, ${Math.round(x.wa/(x.n+x.wa+x.o||1)*100)}% wants`:""}"><span class="wl">${clipLabel(x.w,k)}</span><span class="wr">${money(x.t)}</span></button>`).join("")}</div></section>
+  <section><div class="sh"><h2>Budget</h2><span class="aside">${leftOver(k, budgetFor(k))}</span></div>${budgetBlock(k, null, true)}</section>
   <section class="stack">
   ${top.length?box("m|where","Where it went","Top places", money(top.reduce((a,x)=>a+x.t,0)), top.map(x=>`<div class="brow"><div class="l"><span>${esc(x.n)} <span style="color:var(--muted)">× ${x.c}</span></span><span><b>${money(x.t)}</b></span></div></div>`).join("")):""}
-  ${st.tx.length?box("m|all","All purchases", `${st.tx.length} logged`, money(st.spending), weeks.slice().reverse().map(w=>{ const t=newestFirst(weekTx(w)); if(!t.length) return ""; const key="m|all|"+iso(w), o=isOpen(key); return `<div class="wkx ${o?"open":""}" data-expwrap="${key}"><button class="wkh" data-exp="${key}" aria-expanded="${o}"><span>${rangeLabel(w)}</span><span class="r">${money(sum(t))}</span></button>${o?`<div class="dayx ${grows(key)?"grow":""}" style="margin-top:0"><div class="in" style="border:0;padding:0">${t.map(x=>txRow(x,k,true)).join("")}</div></div>`:""}</div>`; }).join("")):""}
+  ${st.tx.length?box("m|all","All purchases", `${st.tx.length} logged`, money(st.spending), weeks.slice().reverse().map(w=>{ const t=newestFirst(weekTx(w,k)); if(!t.length) return ""; const key="m|all|"+iso(w), o=isOpen(key); return `<div class="wkx ${o?"open":""}" data-expwrap="${key}"><button class="wkh" data-exp="${key}" aria-expanded="${o}"><span>${clipLabel(w,k)}</span><span class="r">${money(sum(t))}</span></button>${o?`<div class="dayx ${grows(key)?"grow":""}" style="margin-top:0"><div class="in" style="border:0;padding:0">${t.map(x=>txRow(x,k,true)).join("")}</div></div>`:""}</div>`; }).join("")):""}
   </section>`;
 }
 function viewYear(){
@@ -498,7 +585,7 @@ function viewYear(){
   const max = Math.max(1,...rows.map(r=>r.total));
   const W=480,H=230,pb=26,pt=20, bw=(W)/12;
   for (const r of rows){ let n=0, wv=0; for (const t of r.tx){ if (t.ignored) continue; const g=catGroup(r.k,t.cat); if (g==="bill") continue; if (g==="want") wv+=t.amount; else n+=t.amount; } r.needs=round2(n); r.wants=round2(wv); }
-  const yf = V.yf || "all", show = g => yf==="all" || yf===g;
+  const yf = V.yf || "all", show = g => yf==="all" || yf===g || (yf==="nw" && g!=="bill");
   const shownTot = r => (show("bill")?Math.max(0,r.bills):0)+(show("need")?Math.max(0,r.needs):0)+(show("want")?Math.max(0,r.wants):0);
   const smax = Math.max(1, ...rows.map(r=>r.has ? shownTot(r) : 0));
   const bars = rows.map((r,i)=>{ const x=i*bw+bw*0.18, w=bw*0.64, sc=(H-pb-pt)/smax;
@@ -513,7 +600,7 @@ function viewYear(){
   ${banner()}
   <div class="hero"><div class="lbl">Total spent in ${y}${y===cy?" so far":""}</div><div class="big">${money(tot.s+tot.b)}</div>
     <div style="display:flex;gap:6px 24px;flex-wrap:wrap;color:var(--hero-muted);font-size:.92rem"><span><b style="color:var(--hero-ink)">${money(tot.s)}</b> spending</span><span><b style="color:var(--hero-ink)">${money(tot.b)}</b> bills</span>${avg?`<span><b style="color:var(--hero-ink)">${money(avg)}</b> average full month</span>`:""}</div></div>
-  <section><div class="sh"><h2>Month by month</h2><div class="yfw" data-expwrap="yf"><button class="icon yfb ${yf!=="all"?"on":""}" data-exp="yf" aria-label="Choose what the chart shows" aria-expanded="${isOpen("yf")}" aria-haspopup="menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg></button>${isOpen("yf")?`<div class="yfm" role="menu">${[["all","Bills, needs and wants"],["bill","Just bills"],["need","Just needs"],["want","Just wants"]].map(([v,l])=>`<button role="menuitemradio" aria-checked="${yf===v}" data-yf="${v}">${v==="all"?`<span class="sws"><i class="sw" style="background:var(--bill)"></i><i class="sw" style="background:var(--need)"></i><i class="sw" style="background:var(--want)"></i></span>`:`<i class="sw" style="background:${catColor(v)}"></i>`}${l}</button>`).join("")}</div>`:""}</div></div>
+  <section><div class="sh"><h2>Month by month</h2><div class="yfw" data-expwrap="yf"><button class="icon yfb ${yf!=="all"?"on":""}" data-exp="yf" aria-label="Choose what the chart shows" aria-expanded="${isOpen("yf")}" aria-haspopup="menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg></button>${isOpen("yf")?`<div class="yfm" role="menu">${[["all","Bills, needs and wants"],["nw","Needs and wants"],["bill","Just bills"],["need","Just needs"],["want","Just wants"]].map(([v,l])=>`<button role="menuitemradio" aria-checked="${yf===v}" data-yf="${v}">${v==="all"?`<span class="sws"><i class="sw" style="background:var(--bill)"></i><i class="sw" style="background:var(--need)"></i><i class="sw" style="background:var(--want)"></i></span>`:v==="nw"?`<span class="sws"><i class="sw" style="background:var(--need)"></i><i class="sw" style="background:var(--want)"></i></span>`:`<i class="sw" style="background:${catColor(v)}"></i>`}${l}</button>`).join("")}</div>`:""}</div></div>
     <svg class="ychart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Monthly totals for ${y}">${bars}</svg>
     <div class="legend">${show("want")?`<span><i class="sw" style="background:var(--want)"></i>Wants</span>`:""}${show("need")?`<span><i class="sw" style="background:var(--need)"></i>Needs</span>`:""}${show("bill")?`<span><i class="sw" style="background:var(--bill)"></i>Bills</span>`:""}</div></section>
   <section><table class="mtable"><thead><tr><th>Month</th><th>Spending</th><th>Bills</th><th>Total</th></tr></thead><tbody>
@@ -540,7 +627,7 @@ document.addEventListener("click", e => {
     const keep = V.open.filter(k=>inside.has(k)); if (keep.length!==V.open.length){ V.open = keep; render(); }
   }
   const yfc = e.target.closest("[data-yf]");
-  if (yfc){ V.yf = yfc.dataset.yf; V.open = V.open.filter(k=>k!=="yf"); render(); return; }
+  if (yfc){ V.yf = yfc.dataset.yf; try { localStorage.setItem("wb-yf", V.yf); } catch(e){} V.open = V.open.filter(k=>k!=="yf"); render(); return; }
   const ex = e.target.closest("[data-exp]");
   if (ex){ const key = ex.dataset.exp; if (V.open.includes(key)) V.open = V.open.filter(k=>k!==key && !k.startsWith(key+"|")); else V.open = V.open.concat([key]); render(); return; }
   const t = e.target.closest("[data-addday],[data-tab],[data-go],[data-day],[data-edit],[data-settings],[data-openmonth],[data-openweek],[data-profile],[data-back],[data-pact]");
@@ -556,7 +643,7 @@ document.addEventListener("click", e => {
     else if (g==="y-1") V.year--; else if (g==="y+1") V.year++;
     render(); return; }
   if (t.dataset.day){ V.day = V.day===t.dataset.day ? null : t.dataset.day; render(); return; }
-  if (t.dataset.edit){ const tx=monthTx(t.dataset.month).find(x=>x.id===t.dataset.edit); if (tx) openTx(tx); return; }
+  if (t.dataset.edit){ const tx=findTx(t.dataset.edit); if (tx) openTx(tx); return; }
   if (t.dataset.settings!==undefined){ openSettings(); return; }
   if (t.dataset.openmonth){ const k=t.dataset.openmonth; if (!S.months[k] && k!==mkeyOf(today())) return; V.month=k; V.tab="month"; window.scrollTo(0,0); render(); return; }
   if (t.dataset.openweek){ V.week=parseISO(t.dataset.openweek); V.day=null; V.tab="week"; window.scrollTo(0,0); render(); return; }
@@ -570,29 +657,48 @@ function defaultDate(){ if (V.tab==="week"){ if (V.day) return V.day; const t=is
 function openTx(tx){
   editing = tx; catTouched = !!tx; const cats = budgetFor(mkeyOf(parseISO(tx?tx.date:defaultDate())));
   pickedCat = tx ? tx.cat : (cats.find(c=>c.name==="Misc")||cats[0]||{name:"Misc"}).name;
-  const order = {need:0,want:1,bill:2}; const sorted = cats.slice().sort((a,b)=>(order[a.group]??3)-(order[b.group]??3));
-  const catNames = [...new Set(sorted.map(c=>c.name).concat(tx&&!cats.some(c=>c.name===tx.cat)?[tx.cat]:[]))];
+  catsNow = cats; openGrp = null;
   $("#txForm").innerHTML = `<h3>${tx?"Edit purchase":"Add a purchase"}<button type="button" class="icon" data-close aria-label="Close">${icon.x}</button></h3>
     <div class="amtin"><span>$</span><input id="fAmt" inputmode="decimal" autocomplete="off" placeholder="0.00" aria-label="Amount" value="${tx?Math.abs(tx.amount).toFixed(2):""}"></div>
     <label class="check"><input type="checkbox" id="fRefund" ${tx&&tx.amount<0?"checked":""}> Refund or credit (subtracts from spending)</label>
     <label class="check"><input type="checkbox" id="fCount" ${tx&&tx.ignored?"":"checked"}> Count this toward spending</label>
     ${tx&&tx.pid?`<p class="note">From ${esc(tx.account||"a linked account")}${tx.pending?", still pending":""}. Your changes stay when the bank updates it.</p>`:""}
     <div class="field"><label for="fName">Where</label><input class="inp" id="fName" list="merchants" autocomplete="off" placeholder="Foodtown, Gas, Dunkin'…" value="${tx?esc(tx.name):""}"></div>
-    <div class="field"><span class="flabel">Category</span><div class="chips" id="fCats">${catNames.map(n=>{ const g=(cats.find(c=>c.name===n)||{}).group; return `<button type="button" class="chip" data-cat="${esc(n)}" aria-pressed="${n===pickedCat}"><i class="sw" style="background:${catColor(g)}"></i>${esc(n)}</button>`; }).join("")}</div></div>
+    <div class="field"><span class="flabel" id="fCatLbl">Category</span><div id="fCats"></div></div>
     <div class="field"><label for="fDate">Day</label><input class="inp" type="date" id="fDate" value="${tx?tx.date:defaultDate()}"></div>
     <div class="actions">${tx?`<button type="button" class="btn del" id="fDel">Delete</button>`:""}<button type="button" class="btn sec" data-close>Cancel</button><button type="submit" class="btn pri">${tx?"Save changes":"Add purchase"}</button></div>`;
+  drawCats();
   const dlg = $("#txDlg"); dlg.showModal(); if (!tx) setTimeout(()=>$("#fAmt").focus(),50);
+}
+/* Category picker: three pills. Tapping one grows it into a panel with just that group's categories. */
+let catsNow = [], openGrp = null;
+const GROUPS = [["need","Needs"],["want","Wants"],["bill","Bills"]];
+const chev = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>';
+function drawCats(){
+  const cur = catsNow.find(c=>c.name===pickedCat), curG = cur ? cur.group : null;
+  let html;
+  if (openGrp){
+    const [g,label] = GROUPS.find(x=>x[0]===openGrp), cs = catsNow.filter(c=>c.group===g);
+    const ox = {need:"12%",want:"50%",bill:"88%"}[g];
+    html = `<div class="gpanel" style="--gc:${catColor(g)};--ox:${ox}"><button type="button" class="gph" data-grp="${g}" aria-expanded="true"><span><i class="sw" style="background:var(--gc)"></i>${label}</span>${chev}</button>
+      <div class="gchips">${cs.length ? cs.map(c=>`<button type="button" class="gchip" data-cat="${esc(c.name)}" aria-pressed="${c.name===pickedCat}">${esc(c.name)}</button>`).join("") : `<p class="note" style="margin:0 0 4px">No ${label.toLowerCase()} in this month's budget. Add them in settings.</p>`}</div></div>`;
+  } else {
+    html = `<div class="gpills">${GROUPS.map(([g,label])=>`<button type="button" class="gpill ${curG===g?"on":""}" style="--gc:${catColor(g)}" data-grp="${g}" aria-expanded="false"><span class="gl"><i class="sw" style="background:var(--gc)"></i>${label}</span>${curG===g?`<span class="gs pick">${esc(pickedCat)}</span>`:`<span class="gs">${(n=>n?`${n} ${n===1?"category":"categories"}`:"None set")(catsNow.filter(c=>c.group===g).length)}</span>`}</button>`).join("")}</div>`;
+  }
+  $("#fCats").innerHTML = html;
+  $("#fCatLbl").innerHTML = curG ? "Category" : `Category <span class="lblnote">· ${esc(pickedCat||"none")}, pick one below</span>`;
 }
 $("#txDlg").addEventListener("click", e => {
   const dlg = $("#txDlg");
   if (e.target === dlg || e.target.closest("[data-close]")){ dlg.close(); return; }
-  const chip = e.target.closest("[data-cat]"); if (chip){ pickedCat = chip.dataset.cat; catTouched = true; if (editing && editing.ignored && pickedCat!=="Unassigned") $("#fCount").checked = true; document.querySelectorAll("#fCats .chip").forEach(c=>c.setAttribute("aria-pressed", c.dataset.cat===pickedCat)); return; }
+  const grp = e.target.closest("[data-grp]"); if (grp){ openGrp = openGrp===grp.dataset.grp ? null : grp.dataset.grp; drawCats(); return; }
+  const chip = e.target.closest("[data-cat]"); if (chip){ pickedCat = chip.dataset.cat; catTouched = true; if (editing && editing.ignored && pickedCat!=="Unassigned") $("#fCount").checked = true; drawCats(); setTimeout(()=>{ if ($("#txDlg").open){ openGrp = null; drawCats(); } }, 180); return; }
   if (e.target.closest("#fDel")){ if (editing.pid){ S.tomb = S.tomb.concat([editing.pid]); persist("tombstones", {ids:S.tomb}); } removeTx(editing); dlg.close(); toast("Purchase deleted"); }
 });
 $("#txDlg").addEventListener("input", e => {
   if (e.target.id!=="fName" || catTouched) return;
   const m = (S.settings.merchants||{})[norm(e.target.value)];
-  if (m && document.querySelector(`#fCats [data-cat="${CSS.escape(m.c)}"]`)){ pickedCat=m.c; document.querySelectorAll("#fCats .chip").forEach(c=>c.setAttribute("aria-pressed", c.dataset.cat===pickedCat)); }
+  if (m && catsNow.some(c=>c.name===m.c) && m.c!==pickedCat){ pickedCat=m.c; drawCats(); }
 });
 $("#txForm").addEventListener("submit", e => {
   e.preventDefault();
@@ -615,8 +721,11 @@ $("#txForm").addEventListener("submit", e => {
   editing=null; render();
 });
 function removeTx(tx, quiet){
-  const k = mkeyOf(parseISO(tx.date)); const d = clone(monthDoc(k)); d.tx = (d.tx||[]).filter(x=>x.id!==tx.id);
-  S.months[k]=d; persist("m-"+k, d); if (!quiet) render();
+  for (const k of Object.keys(S.months)){
+    if (!(S.months[k].tx||[]).some(x=>x.id===tx.id)) continue;
+    const d = clone(S.months[k]); d.tx = d.tx.filter(x=>x.id!==tx.id); S.months[k]=d; persist("m-"+k, d);
+  }
+  if (!quiet) render();
 }
 
 /* ---------- Netlify API (outside claude.ai) ---------- */
@@ -725,9 +834,11 @@ function viewProfile(){
   <section><div class="sh"><h2>Backup</h2></div>
     <p class="note" style="margin:0 0 12px">Save your budget, bills and purchases to a file, or restore them from one.</p>
     <div class="pacts" style="margin-top:0"><button class="btn sec" data-pact="export">Download a backup</button><button class="btn sec" data-pact="import">Restore from a backup</button></div></section>
-  ${S.mode==="api"?`<section><button class="jump" data-pact="lock">Lock this device</button></section>`:""}`;
+  ${S.mode==="api"?`<section><button class="jump" data-pact="lock">Lock this device</button></section>`:""}
+  <p class="note" style="text-align:center;margin-top:28px">${APP_BUILD.startsWith("__")?"Sandbox version":`Version ${esc(APP_BUILD)}`}</p>`;
 }
 const fmtStart = () => "Sep 1, 2026";
+const APP_BUILD = "1.01";
 async function exportBackup(){
   const docs = { settings: S.settings, tombstones: {ids:S.tomb} };
   for (const k in S.months) docs["m-"+k] = S.months[k];
@@ -755,7 +866,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 /* ---------- settings ---------- */
 let draft = null, setMonth = null;
 function openSettings(){
-  setMonth = V.tab==="week" ? mkeyOf(V.week) : V.tab==="month" ? V.month : mkeyOf(today());
+  setMonth = V.tab==="week" ? mkeyOf(weekRef(V.week)) : V.tab==="month" ? V.month : mkeyOf(today());
   const c = cfgFor(setMonth); draft = {categories: clone(c.categories).map(x=>({...x,_o:x.name})), base: clone({categories:c.categories})};
   drawSettings(); $("#setDlg").showModal();
 }
@@ -811,6 +922,11 @@ $("#setDlg").addEventListener("click", e => {
     dlg.close(); toast(`Saved for ${monthName(setMonth)} onward`); render();
   }
 });
+
+/* ---------- no pinch or double-tap zoom ---------- */
+["gesturestart","gesturechange","gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive:false}));
+document.addEventListener("touchmove", e => { if (e.touches.length > 1) e.preventDefault(); }, {passive:false});
+/* double-tap zoom is turned off by touch-action:manipulation on the page */
 
 /* ---------- number boxes: the first keystroke replaces what's there ---------- */
 const isNumBox = el => el && el.matches && el.matches('input[inputmode="decimal"]');
