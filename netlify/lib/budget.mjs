@@ -48,33 +48,40 @@ const round2 = n => Math.round(n * 100) / 100;
 function cfgFor(settings, k) {
   let v = null;
   for (const x of (settings?.versions || [])) if (x.from <= k) v = x;
-  return v || { categories: [], bills: [] };
+  if (!v) return { categories: [] };
+  // Older settings kept bills in their own list; treat them as budget items in the "bill" group.
+  const cats = (v.categories || []).slice();
+  for (const b of (v.bills || [])) if (!cats.some(c => c.name === b.name)) cats.push({ name: b.name, group: "bill", limit: b.amount });
+  return { categories: cats };
 }
 
-/* Plaid personal-finance categories that are never "spending" here:
-   money moving between your own accounts, card and loan payments, income, and rent (already a bill). */
-const IGNORE_PRIMARY = new Set(["TRANSFER_IN", "TRANSFER_OUT", "LOAN_PAYMENTS", "INCOME"]);
-const IGNORE_DETAILED = new Set(["RENT_AND_UTILITIES_RENT"]);
+/* Never spending here: money between your own accounts, paying off a credit card (the card's
+   purchases are already counted), and income. */
+const IGNORE_PRIMARY = new Set(["TRANSFER_IN", "TRANSFER_OUT", "INCOME"]);
+const IGNORE_DETAILED = new Set(["LOAN_PAYMENTS_CREDIT_CARD_PAYMENT"]);
+/* Payments that are almost always a bill. They wait in "Unassigned" until you assign them to one. */
+const BILL_LIKE_PRIMARY = new Set(["RENT_AND_UTILITIES", "LOAN_PAYMENTS"]);
+export const UNASSIGNED = "Unassigned";
 
-function autoIgnore(t, name, cfg) {
+function autoIgnore(t, learned) {
+  if (learned) return !!learned.i;          // you've decided before how this payee counts
   const pfc = t.personal_finance_category || {};
-  if (IGNORE_PRIMARY.has(pfc.primary) || IGNORE_DETAILED.has(pfc.detailed)) return true;
-  const n = norm(name);
-  return (cfg.bills || []).some(b => { const bn = norm(b.name); return bn.length >= 4 && (n.includes(bn) || bn.includes(n) && n.length >= 4); });
+  return IGNORE_PRIMARY.has(pfc.primary) || IGNORE_DETAILED.has(pfc.detailed);
 }
-function pickCategory(t, name, cfg, merchants) {
+function pickCategory(t, cfg, learned) {
   const names = (cfg.categories || []).map(c => c.name);
   const has = n => names.includes(n);
-  const learned = merchants?.[norm(name)];
   if (learned && has(learned.c)) return learned.c;
   const pfc = t.personal_finance_category || {};
+  if (BILL_LIKE_PRIMARY.has(pfc.primary) && !IGNORE_DETAILED.has(pfc.detailed)) return UNASSIGNED;
   const guess =
     pfc.detailed === "FOOD_AND_DRINK_GROCERIES" ? "Groceries" :
     pfc.detailed === "TRANSPORTATION_GAS" ? "Gas" :
     pfc.primary === "FOOD_AND_DRINK" ? "Dining Out" :
     ["GENERAL_MERCHANDISE", "ENTERTAINMENT", "TRAVEL", "PERSONAL_CARE"].includes(pfc.primary) ? "Discretionary" : "Misc";
   if (has(guess)) return guess;
-  return has("Misc") ? "Misc" : (names[0] || "Misc");
+  const fallback = (cfg.categories || []).find(c => c.name === "Misc") || (cfg.categories || []).find(c => c.group !== "bill");
+  return fallback ? fallback.name : "Misc";
 }
 
 /* ---- sync every linked item into the month documents ---- */
@@ -128,11 +135,12 @@ export async function syncAll() {
       const date = t.authorized_date || t.date;
       const name = t.merchant_name || t.name;
       const cfg = cfgFor(settings, mkeyOf(date));
+      const learned = settings.merchants?.[norm(name)] || null;
       const tx = {
         id: prev?.id || "p_" + t.transaction_id, pid: t.transaction_id, source: "plaid",
-        date, name, amount: round2(t.amount), cat: pickCategory(t, name, cfg, settings.merchants),
+        date, name, amount: round2(t.amount), cat: pickCategory(t, cfg, learned),
         account: acct[t.account_id] || item.institution || "Linked account", pending: !!t.pending,
-        ignored: autoIgnore(t, name, cfg),
+        ignored: autoIgnore(t, learned),
       };
       if (prev?.edited) { tx.name = prev.name; tx.cat = prev.cat; tx.ignored = !!prev.ignored; tx.edited = true; }
       return tx;
