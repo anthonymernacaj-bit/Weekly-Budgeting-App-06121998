@@ -238,44 +238,62 @@ details.wk .tx:last-child{border-bottom:0}
 .fab svg{width:20px;height:20px}
 
 /* sheets */
-dialog{border:0;padding:0;background:var(--surface);color:var(--ink);width:min(560px,100%);max-width:100%;max-height:92vh;border-radius:22px 22px 0 0;margin:auto auto 0}
-dialog::backdrop{background:rgba(10,20,14,.45)}
-@media (min-width:640px){dialog{border-radius:22px;margin:auto}}
-.sheet{padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));overflow:auto;max-height:92vh}
+dialog{--popH:calc(100dvh - 40px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));border:1px solid var(--line);padding:0;background:var(--surface);color:var(--ink);width:min(520px,calc(100% - 24px));max-width:none;max-height:var(--popH);border-radius:24px;margin:auto;box-shadow:0 24px 60px rgba(0,0,0,.45);overflow:hidden}
+dialog[open]{animation:popIn .24s cubic-bezier(.2,.9,.3,1.15)}
+@keyframes popIn{from{opacity:0;transform:translateY(10px) scale(.95)}to{opacity:1;transform:none}}
+dialog::backdrop{background:rgba(6,12,9,.55);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.sheet{padding:18px 18px 16px;overflow:auto;max-height:var(--popH);outline:none}
 .sheet h3{margin:0 0 16px;font-size:1.2rem;letter-spacing:-.015em;display:flex;justify-content:space-between;align-items:center}
 .amtin{display:flex;align-items:center;border-bottom:2px solid var(--ink);margin-bottom:6px}
 .amtin span{font-size:2rem;font-weight:700;color:var(--muted)}
 .amtin input{border:0;background:transparent;font-size:2.4rem;font-weight:800;letter-spacing:-.03em;width:100%;padding:4px 6px;outline:none}
 .field{margin-top:16px}
+#txForm h3{margin-bottom:8px}
+#txForm .amtin input{font-size:2.1rem;padding:2px 6px}
+#txForm .amtin span{font-size:1.7rem}
+#txForm .check{margin-top:6px;font-size:.88rem}
+#txForm .note{margin:6px 0 0;font-size:.8rem}
+#txForm .field{margin-top:12px}
+#txForm .field label,#txForm .flabel{margin-bottom:5px}
+#txForm .inp{padding:10px 12px}
+#txForm input[type="date"].inp{min-height:44px}
+#txForm .actions{margin-top:16px}
+#txForm .btn{padding:13px 16px}
+#txForm .delrow{margin-top:2px}
+#txForm .delrow .btn.del{padding:8px 24px}
 .field label,.flabel{display:block;font-size:.85rem;color:var(--muted);margin-bottom:6px}
 .inp{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:12px 14px}
+input[type="date"].inp{display:block;min-width:0;max-width:100%;-webkit-appearance:none;appearance:none;text-align:left;min-height:48px}
+input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 #fCats{min-height:var(--pickH)}
-.field:has(#fCats){--pickH:147px}
+.field:has(#fCats){--pickH:130px}
 .gpills{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;height:var(--pickH)}
 .lblnote{color:var(--muted);font-weight:400}
-.gpill{border:1.5px solid var(--line);background:transparent;border-radius:18px;padding:14px 12px 12px;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:3px;text-align:left;min-width:0;transition:background .15s,border-color .15s}
+.gpill{border:1.5px solid var(--line);background:transparent;border-radius:18px;padding:12px 12px 10px;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:3px;text-align:left;min-width:0;transition:background .15s,border-color .15s}
 .gpill .gl{display:flex;align-items:center;gap:7px;font-weight:700;font-size:1.02rem}
 .gpill .gs{font-size:.8rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .gpill.on{border-color:var(--gc);background:color-mix(in srgb,var(--gc) 16%,transparent)}
 .gpill .gs.pick{color:var(--gc);font-weight:700;font-size:.9rem}
-.gpanel{min-height:var(--pickH);box-sizing:border-box;border:1.5px solid var(--gc);background:color-mix(in srgb,var(--gc) 10%,transparent);border-radius:18px;padding:2px 12px 12px;transform-origin:var(--ox) top;animation:gOpen .22s cubic-bezier(.2,.8,.2,1)}
+.gpanel{min-height:var(--pickH);box-sizing:border-box;border:1.5px solid var(--gc);background:color-mix(in srgb,var(--gc) 10%,transparent);border-radius:18px;padding:2px 10px 10px;transform-origin:var(--ox) top;animation:gOpen .22s cubic-bezier(.2,.8,.2,1)}
 @keyframes gOpen{from{opacity:0;transform:scale(.9,.6)}to{opacity:1;transform:none}}
-.gph{display:flex;justify-content:space-between;align-items:center;width:100%;border:0;background:transparent;padding:10px 2px 10px;font-weight:700}
+.gph{display:flex;justify-content:space-between;align-items:center;width:100%;border:0;background:transparent;padding:8px 2px 7px;font-weight:700}
 .gph span{display:flex;align-items:center;gap:8px}
 .gph svg{width:18px;height:18px;color:var(--muted)}
-.gchips{display:flex;flex-wrap:wrap;gap:8px}
-.gchip{border:1.5px solid color-mix(in srgb,var(--gc) 45%,transparent);background:var(--surface);border-radius:999px;padding:8px 14px;font-size:.95rem;transition:background .12s}
+.gchips{display:flex;flex-wrap:wrap;gap:6px}
+.gchip{border:1.5px solid color-mix(in srgb,var(--gc) 45%,transparent);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:.92rem;transition:background .12s}
 .gchip[aria-pressed="true"]{background:var(--gc);border-color:var(--gc);color:var(--bg);font-weight:700}
 .chip{border:1.5px solid var(--line);background:transparent;border-radius:999px;padding:7px 14px;display:flex;align-items:center;gap:7px;font-size:.92rem}
 .chip[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--bg)}
 .row{display:flex;gap:10px;align-items:center}
 .check{display:flex;align-items:center;gap:8px;font-size:.92rem;color:var(--muted);margin-top:8px}
 .actions{display:flex;gap:10px;margin-top:24px}
-.btn{border:0;border-radius:14px;padding:14px 18px;font-weight:700;flex:1}
+.btn{border:0;border-radius:14px;padding:14px 18px;font-weight:700;flex:1;white-space:nowrap}
 .btn.pri{background:var(--ink);color:var(--bg)}
 .btn.sec{background:var(--track)}
 .btn.del{background:transparent;color:var(--over);flex:0 0 auto}
+.delrow{display:flex;justify-content:center;margin-top:6px}
+.delrow .btn.del{padding:12px 24px}
 .srow{display:grid;grid-template-columns:1fr 92px 96px 36px;gap:8px;align-items:center;margin-bottom:8px}
 .sgrp{margin-bottom:14px}
 .sgh{display:flex;justify-content:space-between;align-items:center;font-size:.9rem;font-weight:600;padding:8px 0 6px;border-bottom:1px solid var(--line);margin-bottom:8px}
@@ -317,8 +335,8 @@ body.locked .tabs,body.locked .fab{display:none}
 </div></nav>
 <button class="fab" id="fab" aria-label="Add a purchase"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add</button>
 
-<dialog id="txDlg"><form class="sheet" id="txForm" method="dialog"></form></dialog>
-<dialog id="setDlg"><div class="sheet" id="setBody"></div></dialog>
+<dialog id="txDlg"><form class="sheet" id="txForm" method="dialog" tabindex="-1"></form></dialog>
+<dialog id="setDlg"><div class="sheet" id="setBody" tabindex="-1"></div></dialog>
 <div class="toast" id="toast" role="status"></div>
 <datalist id="merchants"></datalist>
 <input type="file" id="importIn" accept="application/json,.json" hidden>
@@ -666,9 +684,9 @@ function openTx(tx){
     <div class="field"><label for="fName">Where</label><input class="inp" id="fName" list="merchants" autocomplete="off" placeholder="Foodtown, Gas, Dunkin'…" value="${tx?esc(tx.name):""}"></div>
     <div class="field"><span class="flabel" id="fCatLbl">Category</span><div id="fCats"></div></div>
     <div class="field"><label for="fDate">Day</label><input class="inp" type="date" id="fDate" value="${tx?tx.date:defaultDate()}"></div>
-    <div class="actions">${tx?`<button type="button" class="btn del" id="fDel">Delete</button>`:""}<button type="button" class="btn sec" data-close>Cancel</button><button type="submit" class="btn pri">${tx?"Save changes":"Add purchase"}</button></div>`;
+    <div class="actions"><button type="button" class="btn sec" data-close>Cancel</button><button type="submit" class="btn pri">${tx?"Save changes":"Add purchase"}</button></div>${tx?`<div class="delrow"><button type="button" class="btn del" id="fDel">Delete</button></div>`:""}`;
   drawCats();
-  const dlg = $("#txDlg"); dlg.showModal(); if (!tx) setTimeout(()=>$("#fAmt").focus(),50);
+  const dlg = $("#txDlg"); dlg.showModal(); $("#txForm").focus({preventScroll:true}); if (!tx) setTimeout(()=>$("#fAmt").focus(),50);
 }
 /* Category picker: three pills. Tapping one grows it into a panel with just that group's categories. */
 let catsNow = [], openGrp = null;
@@ -838,7 +856,7 @@ function viewProfile(){
   <p class="note" style="text-align:center;margin-top:28px">${APP_BUILD.startsWith("__")?"Sandbox version":`Version ${esc(APP_BUILD)}`}</p>`;
 }
 const fmtStart = () => "Sep 1, 2026";
-const APP_BUILD = "1.01";
+const APP_BUILD = "1.02";
 async function exportBackup(){
   const docs = { settings: S.settings, tombstones: {ids:S.tomb} };
   for (const k in S.months) docs["m-"+k] = S.months[k];
@@ -868,7 +886,7 @@ let draft = null, setMonth = null;
 function openSettings(){
   setMonth = V.tab==="week" ? mkeyOf(weekRef(V.week)) : V.tab==="month" ? V.month : mkeyOf(today());
   const c = cfgFor(setMonth); draft = {categories: clone(c.categories).map(x=>({...x,_o:x.name})), base: clone({categories:c.categories})};
-  drawSettings(); $("#setDlg").showModal();
+  drawSettings(); $("#setDlg").showModal(); $("#setBody").focus({preventScroll:true});
 }
 function drawSettings(){
   const tot = g => draft.categories.filter(c=>!g||c.group===g).reduce((a,c)=>a+(+c.limit||0),0);
